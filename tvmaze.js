@@ -1,17 +1,16 @@
 "use strict";
 
 const $showsList = $("#shows-list");
-const $episodesArea = $("#episodes-area");
 const $searchForm = $("#search-form");
 
-
+//pulls data by search term from api
 async function getShowsByTerm(term) {
   let shows = await axios.get(`https://api.tvmaze.com/search/shows?q=${term}`);
   return shows.data;
   
 }
 
-
+//adds new search results to the DOM, including buttons for episode expansion
 function populateShows(shows) {
   $showsList.empty();
 
@@ -57,41 +56,51 @@ function populateShows(shows) {
 }
 
 
-
+//combines actions of the first two functions (gets data, uses data to update the DOM)
 async function searchForShowAndDisplay() {
   const term = $("#search-query").val();
   const shows = await getShowsByTerm(term);
-
-  $episodesArea.hide();
   populateShows(shows);
 }
 
+//event handler for submit button
 $searchForm.on("submit", async function (evt) {
   evt.preventDefault();
   await searchForShowAndDisplay();
   $("#search-query").val('')
 });
 
+//gets episode data by show ID from API
 async function getEpisodes(id) {
   const result = await axios.get(`http://api.tvmaze.com/shows/${id}/episodes`);
   return result.data;
 }
 
+//event handler for episode buttons
 $('.row').on('click', 'button', async function(e) {
-  const epList = await getEpisodes(e.target.id)
+  const epList = await getEpisodes(e.target.id);
   populateEpisodes(epList);
 })
 
+//empties previous data, adds episode data to the modal, and toggle the modal to visible
 function populateEpisodes(epList) {
   $('#episodes-list').empty();
-  for (let ep of epList) {
-    const newEpisode = document.createElement('li');
-    newEpisode.innerHTML = `<b>${ep.name}</b> (Season ${ep.season}, Episode ${ep.number})`
+  if (epList.length === 0){
+    const newEpisode = document.createElement('p');
+    newEpisode.innerHTML = `No Episode Data Available`
     $('#episodes-list').append(newEpisode);
     $('#episodeModal').modal('toggle');
+  } else {
+    for (let ep of epList) {
+      const newEpisode = document.createElement('li');
+      newEpisode.innerHTML = `<b>${ep.name}</b> (Season ${ep.season}, Episode ${ep.number})`
+      $('#episodes-list').append(newEpisode);
+      $('#episodeModal').modal('toggle');
+    }
   }
 }
 
+//adds button functionality to modal buttons, closing the modal
 $('#episodeModal').on('click', "button", function(){
   $('#episodeModal').modal('toggle');
 })
