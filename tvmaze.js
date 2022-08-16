@@ -72,7 +72,7 @@ $searchForm.on("submit", async function (evt) {
 
 //gets episode data by show ID from API
 async function getEpisodes(id) {
-  const result = await axios.get(`http://api.tvmaze.com/shows/${id}/episodes`);
+  const result = await axios.get(`https://api.tvmaze.com/shows/${id}/episodes`);
   return result.data;
 }
 
